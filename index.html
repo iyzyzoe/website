@@ -1,711 +1,987 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jane Doe — Photography</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZOE YANG</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg: #f8f7f4;
-      --ink: #1a1a18;
-      --muted: #8a8a82;
-      --accent: #c8b89a;
-      --white: #ffffff;
-      --serif: 'Cormorant Garamond', serif;
-      --sans: 'DM Sans', sans-serif;
-    }
+  :root {
+    --cream: #f7f4ef;
+    --ink: #1a1a18;
+    --mid: #7a7570;
+    --light: #c8c3bc;
+    --accent: #b8a898;
+    --edit-bar: #1a1a18;
+  }
 
-    html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; }
 
-    body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: var(--sans);
-      font-weight: 300;
-      line-height: 1.6;
-      cursor: none;
-    }
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    overflow-x: hidden;
+  }
 
-    /* Custom cursor */
-    .cursor {
-      position: fixed;
-      width: 8px; height: 8px;
-      background: var(--ink);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
-      transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
-    }
-    .cursor-ring {
-      position: fixed;
-      width: 32px; height: 32px;
-      border: 1px solid var(--ink);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9998;
-      transform: translate(-50%, -50%);
-      transition: all 0.15s ease;
-      opacity: 0.5;
-    }
-    a:hover ~ .cursor, button:hover ~ .cursor { transform: translate(-50%,-50%) scale(2); }
+  /* ── EDIT BAR ── */
+  #edit-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: var(--edit-bar);
+    color: #fff;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 32px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  #edit-bar.active { display: flex; }
+  .edit-bar-left { display: flex; align-items: center; gap: 16px; }
+  .edit-indicator { width: 8px; height: 8px; border-radius: 50%; background: #e8c97a; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .edit-bar-right { display: flex; gap: 12px; }
+  .btn-bar {
+    padding: 6px 18px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: transparent;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-bar:hover { background: rgba(255,255,255,0.1); }
+  .btn-bar.publish { background: #e8c97a; color: #1a1a18; border-color: #e8c97a; }
+  .btn-bar.publish:hover { background: #d4b560; }
 
-    /* Nav */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 2rem 4rem;
-      mix-blend-mode: multiply;
-    }
-    .nav-logo {
-      font-family: var(--serif);
-      font-size: 1.4rem;
-      font-weight: 300;
-      letter-spacing: 0.05em;
-      text-decoration: none;
-      color: var(--ink);
-    }
-    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
-    .nav-links a {
-      text-decoration: none;
-      color: var(--ink);
-      font-size: 0.8rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      position: relative;
-      padding-bottom: 2px;
-    }
-    .nav-links a::after {
-      content: '';
-      position: absolute; bottom: 0; left: 0;
-      width: 0; height: 1px;
-      background: var(--ink);
-      transition: width 0.3s ease;
-    }
-    .nav-links a:hover::after { width: 100%; }
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 900;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 56px;
+    transition: top 0.3s;
+  }
+  body.edit-mode nav { top: 40px; }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    text-decoration: none;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  .nav-links { display: flex; gap: 36px; align-items: center; }
+  .nav-links a {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--mid); }
+  .nav-edit-btn {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--light);
+    color: var(--mid);
+    padding: 6px 16px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.2s;
+  }
+  .nav-edit-btn:hover { border-color: var(--ink); color: var(--ink); }
 
-    /* Hero */
-    #home {
-      height: 100vh;
-      display: flex; align-items: flex-end;
-      padding: 4rem;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero-bg {
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, #e8e4dc 0%, #d4cfc6 40%, #c2bdb3 100%);
-      z-index: 0;
-    }
-    .hero-bg::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      opacity: 0.4;
-    }
-    .hero-content { position: relative; z-index: 1; }
-    .hero-eyebrow {
-      font-size: 0.75rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1rem;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.2s forwards;
-    }
-    .hero-title {
-      font-family: var(--serif);
-      font-size: clamp(4rem, 10vw, 9rem);
-      font-weight: 300;
-      line-height: 0.95;
-      letter-spacing: -0.01em;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.4s forwards;
-    }
-    .hero-title em { font-style: italic; color: var(--muted); }
-    .hero-sub {
-      margin-top: 2rem;
-      font-size: 0.9rem;
-      color: var(--muted);
-      max-width: 320px;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.6s forwards;
-    }
-    .hero-scroll {
-      position: absolute; right: 4rem; bottom: 4rem;
-      writing-mode: vertical-rl;
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      display: flex; align-items: center; gap: 1rem;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.8s forwards;
-    }
-    .hero-scroll::before {
-      content: '';
-      display: block;
-      width: 1px; height: 60px;
-      background: var(--muted);
-    }
+  /* ── HERO ── */
+  #hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 56px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #ede8e0 0%, #d8d0c4 50%, #ccc4b8 100%);
+  }
+  .hero-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 70% 30%, rgba(184,168,152,0.3) 0%, transparent 60%),
+      radial-gradient(ellipse at 20% 80%, rgba(122,117,112,0.15) 0%, transparent 50%);
+  }
+  /* Hero photo placeholder */
+  .hero-photo-area {
+    position: absolute;
+    right: 56px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 420px;
+    height: 560px;
+    overflow: hidden;
+  }
+  .hero-photo-area img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .hero-photo-placeholder {
+    width: 100%; height: 100%;
+    background: rgba(122,117,112,0);
+    border: 1px dashed transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.3s, border-color 0.3s;
+    opacity: 0;
+  }
+  body.edit-mode .hero-photo-placeholder { opacity: 1; }
+  body.edit-mode .hero-photo-placeholder:hover { background: rgba(122,117,112,0.25); border-color: var(--light); }
+  .hero-photo-placeholder span { font-size: 10px; letter-spacing: 0.15em; color: var(--mid); text-transform: uppercase; }
+  .upload-icon { font-size: 28px; opacity: 0.5; }
 
-    /* Sections */
-    section { padding: 7rem 4rem; }
-    .section-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 1rem;
-    }
-    .section-title {
-      font-family: var(--serif);
-      font-size: clamp(2.5rem, 5vw, 4.5rem);
-      font-weight: 300;
-      line-height: 1.1;
-    }
+  .hero-content { position: relative; z-index: 1; max-width: 520px; }
+  .hero-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 20px;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(52px, 7vw, 96px);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    margin-bottom: 28px;
+  }
+  .hero-title em { font-style: italic; }
+  .hero-sub {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--mid);
+    line-height: 1.8;
+    max-width: 340px;
+    margin-bottom: 40px;
+  }
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 4px;
+    transition: gap 0.3s;
+  }
+  .hero-cta:hover { gap: 20px; }
 
-    /* Gallery */
-    #gallery { background: var(--white); }
-    .gallery-header { margin-bottom: 4rem; }
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      grid-auto-rows: 80px;
-      gap: 12px;
-    }
-    .photo-card {
-      background: var(--bg);
-      overflow: hidden;
-      position: relative;
-      cursor: none;
-    }
-    .photo-card:nth-child(1)  { grid-column: 1/6;  grid-row: 1/6;  }
-    .photo-card:nth-child(2)  { grid-column: 6/9;  grid-row: 1/4;  }
-    .photo-card:nth-child(3)  { grid-column: 9/13; grid-row: 1/5;  }
-    .photo-card:nth-child(4)  { grid-column: 6/9;  grid-row: 4/7;  }
-    .photo-card:nth-child(5)  { grid-column: 9/13; grid-row: 5/9;  }
-    .photo-card:nth-child(6)  { grid-column: 1/5;  grid-row: 6/9;  }
-    .photo-card:nth-child(7)  { grid-column: 5/9;  grid-row: 7/11; }
-    .photo-card:nth-child(8)  { grid-column: 9/13; grid-row: 9/13; }
-    .photo-card:nth-child(9)  { grid-column: 1/5;  grid-row: 9/13; }
-    .photo-card:nth-child(10) { grid-column: 5/9;  grid-row: 11/14;}
-    .photo-card:nth-child(11) { grid-column: 9/13; grid-row: 13/16;}
-    .photo-card:nth-child(12) { grid-column: 1/5;  grid-row: 13/16;}
+  /* ── SECTIONS ── */
+  section { padding: 120px 56px; }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--light);
+    margin-bottom: 60px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .section-label::after { content: ''; flex: 0 0 40px; height: 1px; background: var(--light); }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 4vw, 54px);
+    font-weight: 300;
+    line-height: 1.15;
+    margin-bottom: 32px;
+  }
 
-    /* Placeholder gradient images */
-    .photo-card::before {
-      content: '';
-      position: absolute; inset: 0;
-      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-    .photo-card:nth-child(1)::before  { background: linear-gradient(135deg, #c9b99a, #a09070); }
-    .photo-card:nth-child(2)::before  { background: linear-gradient(135deg, #b8c4bb, #8a9e93); }
-    .photo-card:nth-child(3)::before  { background: linear-gradient(135deg, #d4c5b0, #b09070); }
-    .photo-card:nth-child(4)::before  { background: linear-gradient(135deg, #c2d0c8, #96a89e); }
-    .photo-card:nth-child(5)::before  { background: linear-gradient(135deg, #bfb5a8, #8e826e); }
-    .photo-card:nth-child(6)::before  { background: linear-gradient(135deg, #ccc0af, #a89060); }
-    .photo-card:nth-child(7)::before  { background: linear-gradient(135deg, #b5c2bc, #8a9f92); }
-    .photo-card:nth-child(8)::before  { background: linear-gradient(135deg, #c8baaa, #9e8878); }
-    .photo-card:nth-child(9)::before  { background: linear-gradient(135deg, #d0c0a8, #a08060); }
-    .photo-card:nth-child(10)::before { background: linear-gradient(135deg, #b8c8c0, #889890); }
-    .photo-card:nth-child(11)::before { background: linear-gradient(135deg, #c0b4a4, #907060); }
-    .photo-card:nth-child(12)::before { background: linear-gradient(135deg, #cac4b8, #a0987c); }
+  /* ── ABOUT ── */
+  #about { background: var(--cream); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .about-photo-wrap {
+    position: relative;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+  }
+  .about-photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .about-photo-placeholder {
+    width: 100%; height: 100%;
+    background: transparent;
+    border: 1px dashed transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    min-height: 400px;
+    opacity: 0;
+    transition: opacity 0.3s, background 0.3s, border-color 0.3s;
+  }
+  body.edit-mode .about-photo-placeholder:hover {
+    opacity: 1;
+    background: rgba(122,117,112,0.1);
+    border-color: var(--light);
+  }
+  .about-photo-placeholder span { font-size: 10px; letter-spacing: 0.15em; color: var(--mid); text-transform: uppercase; }
+  .about-text { padding-top: 20px; }
+  .about-body {
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--mid);
+    margin-bottom: 40px;
+  }
+  .about-body p { margin-bottom: 20px; }
+  .about-details { display: flex; flex-direction: column; gap: 16px; border-top: 1px solid var(--light); padding-top: 32px; }
+  .about-detail { display: flex; gap: 24px; font-size: 11px; }
+  .detail-label { letter-spacing: 0.15em; text-transform: uppercase; color: var(--light); min-width: 80px; }
+  .detail-val { color: var(--mid); }
 
-    .photo-card:hover::before { transform: scale(1.05); }
+  /* ── GALLERY / PORTFOLIO ── */
+  #portfolio { background: #f0ece5; }
+  .cat-tabs { display: flex; gap: 0; margin-bottom: 48px; border-bottom: 1px solid var(--light); }
+  .cat-tab {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: 'Montserrat', sans-serif;
+    color: var(--mid);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+  .cat-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+  .cat-tab:hover { color: var(--ink); }
+  .add-cat-btn {
+    font-size: 18px;
+    padding: 8px 16px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--light);
+    margin-bottom: -1px;
+    display: none;
+  }
+  body.edit-mode .add-cat-btn { display: block; }
 
-    .photo-label {
-      position: absolute; bottom: 1rem; left: 1rem;
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.7);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .photo-card:hover .photo-label { opacity: 1; }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+  .gallery-item {
+    position: relative;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+    background: rgba(122,117,112,0.08);
+    cursor: pointer;
+  }
+  .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+  .gallery-item:hover img { transform: scale(1.04); }
+  .gallery-item-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(26,26,24,0);
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .gallery-item:hover .gallery-item-overlay { background: rgba(26,26,24,0.3); }
+  .gallery-add-btn {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 32px; height: 32px;
+    background: rgba(26,26,24,0.7);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  body.edit-mode .gallery-add-btn { display: flex; }
+  .gallery-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 100%;
+    min-height: 200px;
+    border: 1px dashed transparent;
+    cursor: pointer;
+    opacity: 0;
+    transition: background 0.3s, border-color 0.3s, opacity 0.3s;
+    background: transparent;
+  }
+  body.edit-mode .gallery-placeholder:hover {
+    opacity: 1;
+    background: rgba(122,117,112,0.15);
+    border-color: var(--light);
+  }
+  .gallery-placeholder span { font-size: 9px; letter-spacing: 0.15em; color: var(--light); text-transform: uppercase; }
 
-    /* Add your real images by replacing the ::before with an img tag */
-    .photo-card img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-    .photo-card:hover img { transform: scale(1.05); }
+  /* ── CONTACT ── */
+  #contact { background: var(--ink); color: var(--cream); }
+  #contact .section-label { color: rgba(247,244,239,0.3); }
+  #contact .section-label::after { background: rgba(247,244,239,0.2); }
+  #contact .section-title { color: var(--cream); }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+  .contact-intro { font-size: 14px; line-height: 1.9; color: rgba(247,244,239,0.6); max-width: 360px; }
+  .contact-links { display: flex; flex-direction: column; gap: 24px; padding-top: 8px; }
+  .contact-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(247,244,239,0.1);
+    text-decoration: none;
+    color: var(--cream);
+    transition: padding-right 0.3s;
+  }
+  .contact-link:hover { padding-right: 8px; }
+  .contact-link-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(247,244,239,0.4); }
+  .contact-link-val { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; }
+  .contact-arrow { color: rgba(247,244,239,0.3); font-size: 18px; }
 
-    /* Lightbox */
-    .lightbox {
-      position: fixed; inset: 0;
-      background: rgba(20,20,18,0.95);
-      z-index: 200;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.3s;
-    }
-    .lightbox.open { opacity: 1; pointer-events: all; }
-    .lightbox img {
-      max-width: 85vw; max-height: 85vh;
-      object-fit: contain;
-      border: none;
-    }
-    .lightbox-close {
-      position: absolute; top: 2rem; right: 2rem;
-      background: none; border: none;
-      color: white; font-size: 1.5rem;
-      cursor: pointer; padding: 0.5rem;
-    }
-    .lightbox-placeholder {
-      width: 600px; height: 400px;
-      background: linear-gradient(135deg, #3a3530, #2a2520);
-      display: flex; align-items: center; justify-content: center;
-      color: rgba(255,255,255,0.3);
-      font-family: var(--serif);
-      font-size: 1.5rem;
-      letter-spacing: 0.1em;
-    }
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    color: rgba(247,244,239,0.3);
+    padding: 32px 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    border-top: 1px solid rgba(247,244,239,0.08);
+  }
 
-    /* About */
-    #about {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6rem;
-      align-items: center;
-    }
-    .about-image {
-      aspect-ratio: 3/4;
-      background: linear-gradient(160deg, #c4b8a4, #8e7e68);
-      position: relative;
-      overflow: hidden;
-    }
-    .about-image::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(to bottom, transparent 60%, rgba(20,18,14,0.3));
-    }
-    .about-text .section-title { margin-bottom: 2rem; }
-    .about-text p {
-      color: var(--muted);
-      margin-bottom: 1.5rem;
-      font-size: 0.95rem;
-      line-height: 1.8;
-    }
-    .about-stats {
-      display: flex; gap: 3rem;
-      margin-top: 3rem; padding-top: 2rem;
-      border-top: 1px solid #e0ddd8;
-    }
-    .stat-num {
-      font-family: var(--serif);
-      font-size: 2.5rem;
-      font-weight: 300;
-      display: block;
-    }
-    .stat-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
+  /* ── MODAL / PASSWORD ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,24,0.85);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--cream);
+    padding: 56px;
+    width: 420px;
+    transform: translateY(20px);
+    transition: transform 0.3s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: 8px;
+  }
+  .modal-sub { font-size: 11px; color: var(--mid); letter-spacing: 0.08em; margin-bottom: 36px; }
+  .modal-input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--light);
+    background: transparent;
+    padding: 12px 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    margin-bottom: 32px;
+    letter-spacing: 0.08em;
+    transition: border-color 0.2s;
+  }
+  .modal-input:focus { border-bottom-color: var(--ink); }
+  .modal-input.error { border-bottom-color: #c0392b; }
+  .modal-error { font-size: 11px; color: #c0392b; margin-top: -24px; margin-bottom: 24px; letter-spacing: 0.05em; }
+  .modal-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .modal-btn:hover { background: #2d2d2a; }
+  .modal-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: none; border: none;
+    font-size: 20px; cursor: pointer; color: var(--mid);
+  }
 
-    /* Blog */
-    #blog { background: var(--white); }
-    .blog-header { margin-bottom: 4rem; }
-    .blog-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
-    }
-    .blog-card {
-      border-top: 1px solid #e0ddd8;
-      padding-top: 1.5rem;
-      cursor: none;
-    }
-    .blog-date {
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.75rem;
-    }
-    .blog-title {
-      font-family: var(--serif);
-      font-size: 1.5rem;
-      font-weight: 300;
-      line-height: 1.2;
-      margin-bottom: 0.75rem;
-    }
-    .blog-excerpt {
-      font-size: 0.85rem;
-      color: var(--muted);
-      line-height: 1.7;
-      margin-bottom: 1.5rem;
-    }
-    .blog-link {
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      text-decoration: none;
-      color: var(--ink);
-      position: relative;
-      padding-bottom: 2px;
-    }
-    .blog-link::after {
-      content: '';
-      position: absolute; bottom: 0; left: 0;
-      width: 100%; height: 1px;
-      background: var(--ink);
-      transform: scaleX(0);
-      transform-origin: right;
-      transition: transform 0.3s ease;
-    }
-    .blog-link:hover::after { transform: scaleX(1); transform-origin: left; }
-    .blog-img {
-      width: 100%; aspect-ratio: 16/9;
-      margin-bottom: 1.5rem;
-      overflow: hidden;
-    }
-    .blog-img div {
-      width: 100%; height: 100%;
-      transition: transform 0.6s ease;
-    }
-    .blog-card:hover .blog-img div { transform: scale(1.05); }
-    .blog-img-1 { background: linear-gradient(135deg, #c8b89a, #a08060); }
-    .blog-img-2 { background: linear-gradient(135deg, #b0c0b8, #809088); }
-    .blog-img-3 { background: linear-gradient(135deg, #c0b4a0, #907860); }
+  /* ── EDITABLE ── */
+  [contenteditable="true"] {
+    outline: 2px dashed rgba(184,168,152,0.6);
+    outline-offset: 4px;
+    cursor: text;
+    min-height: 1em;
+  }
+  [contenteditable="true"]:focus { outline-color: var(--accent); background: rgba(255,255,255,0.4); }
 
-    /* Contact */
-    #contact {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6rem;
-      align-items: start;
-    }
-    .contact-info .section-title { margin-bottom: 1.5rem; }
-    .contact-info p { color: var(--muted); font-size: 0.95rem; line-height: 1.8; margin-bottom: 2rem; }
-    .contact-detail {
-      margin-bottom: 1.5rem;
-    }
-    .contact-detail-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.25rem;
-    }
-    .contact-detail-value { font-size: 0.95rem; }
+  /* ── LIGHTBOX ── */
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,24,0.96);
+    z-index: 3000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img { max-width: 90vw; max-height: 85vh; object-fit: contain; }
+  #lightbox-close {
+    position: absolute; top: 24px; right: 32px;
+    color: #fff; font-size: 28px; cursor: pointer; background: none; border: none;
+  }
 
-    form { display: flex; flex-direction: column; gap: 1.5rem; }
-    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-    label {
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    input, textarea {
-      background: none;
-      border: none;
-      border-bottom: 1px solid #d8d4cc;
-      padding: 0.75rem 0;
-      font-family: var(--sans);
-      font-weight: 300;
-      font-size: 0.95rem;
-      color: var(--ink);
-      outline: none;
-      transition: border-color 0.3s;
-      resize: none;
-      cursor: none;
-    }
-    input:focus, textarea:focus { border-color: var(--ink); }
-    textarea { min-height: 120px; }
-    .submit-btn {
-      align-self: flex-start;
-      background: var(--ink);
-      color: var(--white);
-      border: none;
-      padding: 1rem 2.5rem;
-      font-family: var(--sans);
-      font-weight: 300;
-      font-size: 0.8rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      cursor: none;
-      position: relative;
-      overflow: hidden;
-      transition: background 0.3s;
-    }
-    .submit-btn:hover { background: var(--muted); }
-    .form-success {
-      display: none;
-      color: var(--accent);
-      font-family: var(--serif);
-      font-size: 1.2rem;
-      font-style: italic;
-    }
+  /* ── CATEGORY MODAL ── */
+  #cat-modal { display: none; }
+  #cat-modal.open { display: flex; }
 
-    /* Footer */
-    footer {
-      padding: 2rem 4rem;
-      display: flex; justify-content: space-between; align-items: center;
-      border-top: 1px solid #e0ddd8;
-    }
-    footer p { font-size: 0.75rem; color: var(--muted); }
-    .footer-links { display: flex; gap: 1.5rem; }
-    .footer-links a {
-      font-size: 0.75rem;
-      color: var(--muted);
-      text-decoration: none;
-    }
-    .footer-links a:hover { color: var(--ink); }
+  /* ── ANIMATIONS ── */
+  .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Scroll reveal */
-    .reveal {
-      opacity: 0; transform: translateY(30px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-    .reveal.visible { opacity: 1; transform: none; }
-
-    @media (max-width: 900px) {
-      nav { padding: 1.5rem 2rem; }
-      section { padding: 5rem 2rem; }
-      #about, #contact { grid-template-columns: 1fr; gap: 3rem; }
-      .blog-grid { grid-template-columns: 1fr; }
-      .gallery-grid { grid-template-columns: repeat(2,1fr); grid-auto-rows: 180px; }
-      .photo-card { grid-column: auto !important; grid-row: auto !important; }
-      footer { flex-direction: column; gap: 1rem; padding: 2rem; }
-      .hero-scroll { display: none; }
-    }
-  </style>
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    section { padding: 80px 24px; }
+    #hero { padding: 0 24px 60px; }
+    .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 40px; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-photo-area { display: none; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
 </head>
 <body>
 
-  <!-- Custom Cursor -->
-  <div class="cursor" id="cursor"></div>
-  <div class="cursor-ring" id="cursorRing"></div>
+<!-- EDIT BAR -->
+<div id="edit-bar">
+  <div class="edit-bar-left">
+    <div class="edit-indicator"></div>
+    <span>Edit Mode — changes are local until published</span>
+  </div>
+  <div class="edit-bar-right">
+    <button class="btn-bar" onclick="discardChanges()">Discard</button>
+    <button class="btn-bar publish" onclick="publishSite()">Publish Changes</button>
+  </div>
+</div>
 
-  <!-- Nav -->
-  <nav>
-    <a href="#home" class="nav-logo">Jane Doe</a>
-    <ul class="nav-links">
-      <li><a href="#gallery">Work</a></li>
-      <li><a href="#about">About</a></li>
-      <li><a href="#blog">Journal</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-  </nav>
+<!-- PASSWORD MODAL -->
+<div class="modal-overlay" id="pw-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('pw-modal')">✕</button>
+    <div class="modal-title">Editor Access</div>
+    <div class="modal-sub">Enter your password to enable edit mode</div>
+    <input type="password" class="modal-input" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()">
+    <div class="modal-error" id="pw-error" style="display:none">Incorrect password. Try again.</div>
+    <button class="modal-btn" onclick="checkPassword()">Unlock</button>
+  </div>
+</div>
 
-  <!-- Hero -->
-  <section id="home">
-    <div class="hero-bg"></div>
-    <div class="hero-content">
-      <p class="hero-eyebrow">Portfolio — Est. 2018</p>
-      <h1 class="hero-title">Light &amp;<br><em>Shadow</em></h1>
-      <p class="hero-sub">Documentary and portrait photography. Stories told through stillness.</p>
+<!-- CATEGORY MODAL -->
+<div class="modal-overlay" id="cat-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('cat-modal')">✕</button>
+    <div class="modal-title">Add Category</div>
+    <div class="modal-sub">Create a new photo gallery category</div>
+    <input type="text" class="modal-input" id="cat-input" placeholder="Category name (e.g. Urban)">
+    <button class="modal-btn" onclick="addCategory()">Add Category</button>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Zoe Yang</a>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#portfolio">Portfolio</a>
+    <a href="#contact">Contact</a>
+    <button class="nav-edit-btn" onclick="openModal('pw-modal')" id="edit-toggle-btn">Edit</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+
+  <div class="hero-photo-area" id="hero-photo-area">
+    <div class="hero-photo-placeholder" id="hero-placeholder" onclick="triggerUpload('hero-upload')">
+      <div class="upload-icon">＋</div>
+      <span>Upload hero photo</span>
     </div>
-    <div class="hero-scroll">Scroll</div>
-  </section>
-
-  <!-- Gallery -->
-  <section id="gallery">
-    <div class="gallery-header reveal">
-      <p class="section-label">Selected Work</p>
-      <h2 class="section-title">The Portfolio</h2>
-    </div>
-    <div class="gallery-grid reveal">
-      <!-- 
-        TO ADD YOUR PHOTOS: Replace the placeholder cards with real images.
-        Example: <div class="photo-card" onclick="openLightbox(this)">
-                   <img src="your-photo.jpg" alt="Description">
-                   <span class="photo-label">Series Name</span>
-                 </div>
-      -->
-      <div class="photo-card" onclick="openLightbox(0)"><span class="photo-label">Portraits</span></div>
-      <div class="photo-card" onclick="openLightbox(1)"><span class="photo-label">Landscape</span></div>
-      <div class="photo-card" onclick="openLightbox(2)"><span class="photo-label">Street</span></div>
-      <div class="photo-card" onclick="openLightbox(3)"><span class="photo-label">Documentary</span></div>
-      <div class="photo-card" onclick="openLightbox(4)"><span class="photo-label">Architecture</span></div>
-      <div class="photo-card" onclick="openLightbox(5)"><span class="photo-label">Abstract</span></div>
-      <div class="photo-card" onclick="openLightbox(6)"><span class="photo-label">Travel</span></div>
-      <div class="photo-card" onclick="openLightbox(7)"><span class="photo-label">Nature</span></div>
-      <div class="photo-card" onclick="openLightbox(8)"><span class="photo-label">Editorial</span></div>
-      <div class="photo-card" onclick="openLightbox(9)"><span class="photo-label">Fashion</span></div>
-      <div class="photo-card" onclick="openLightbox(10)"><span class="photo-label">Events</span></div>
-      <div class="photo-card" onclick="openLightbox(11)"><span class="photo-label">Fine Art</span></div>
-    </div>
-  </section>
-
-  <!-- Lightbox -->
-  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-    <div class="lightbox-placeholder" id="lightboxContent">Your photo here</div>
+    <img id="hero-img" src="" alt="Zoe Yang" style="display:none">
+    <input type="file" id="hero-upload" accept="image/*" style="display:none" onchange="handleUpload(this,'hero-img','hero-placeholder')">
   </div>
 
-  <!-- About -->
-  <section id="about">
-    <div class="about-image reveal">
-      <!-- Replace with: <img src="your-portrait.jpg" alt="Jane Doe" style="width:100%;height:100%;object-fit:cover;"> -->
+  <div class="hero-content">
+    <div class="hero-eyebrow">Bay Area Photographer</div>
+    <h1 class="hero-title">
+      <em id="hero-title-italic">Capturing</em><br>
+      <span id="hero-title-main">the unseen</span>
+    </h1>
+    <p class="hero-sub" id="hero-sub">Urban architecture & cyber cities, framed through symmetry and light.</p>
+    <a href="#portfolio" class="hero-cta">View Portfolio →</a>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">About</div>
+  <div class="about-grid fade-up">
+    <div class="about-photo-wrap">
+      <div class="about-photo-placeholder" id="about-placeholder" onclick="triggerUpload('about-upload')">
+        <div class="upload-icon" style="font-size:28px;opacity:0.4">＋</div>
+        <span>Upload portrait</span>
+      </div>
+      <img id="about-img" src="" alt="Zoe Yang portrait" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0">
+      <input type="file" id="about-upload" accept="image/*" style="display:none" onchange="handleUpload(this,'about-img','about-placeholder')">
     </div>
-    <div class="about-text reveal">
-      <p class="section-label">About Me</p>
-      <h2 class="section-title">A Photographer<br>by <em>Instinct</em></h2>
-      <p>I'm Jane Doe, a documentary and portrait photographer based in New York. I've spent the last decade chasing light — from quiet morning streets to bustling markets across three continents.</p>
-      <p>My work explores the space between the expected and the unseen: the gesture right before a laugh, the stillness after a storm. I believe every photograph is a negotiation between the world and the moment you choose to freeze it.</p>
-      <p>Available for commissions, editorial work, and exhibitions worldwide.</p>
-      <div class="about-stats">
+    <div class="about-text">
+      <h2 class="section-title">Zoe Yang</h2>
+      <div class="about-body" id="about-body">
+        <p id="about-p1">Bay Area-based photographer driven by a childhood passion for capturing moments. This passion evolved into a profound interest in photography, especially focusing on urban architecture and cyber cities.</p>
+        <p id="about-p2">My background in interdisciplinary photography from Cornell University combines art, science, and engineering to create a unique style emphasizing symmetry and balance. My work aims to transport viewers into a serene aesthetic realm by abstracting subjects to amplify their essence.</p>
+        <p id="about-p3">Outside of photography, I enjoy fashion, tech gadgets, and golfing as an adrenaline enthusiast who embraces life on the edge.</p>
+      </div>
+      <div class="about-details">
+        <div class="about-detail">
+          <span class="detail-label">Based</span>
+          <span class="detail-val" id="detail-location">San Francisco Bay Area, CA</span>
+        </div>
+        <div class="about-detail">
+          <span class="detail-label">Education</span>
+          <span class="detail-val" id="detail-edu">Cornell University — Interdisciplinary Photography</span>
+        </div>
+        <div class="about-detail">
+          <span class="detail-label">Speciality</span>
+          <span class="detail-val" id="detail-spec">Urban Architecture · Cyber Cities · Symmetry</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO / GALLERY -->
+<section id="portfolio">
+  <div class="section-label">Portfolio</div>
+  <h2 class="section-title fade-up">Selected Work</h2>
+
+  <!-- Category Tabs -->
+  <div class="cat-tabs" id="cat-tabs">
+    <button class="cat-tab active" data-cat="all" onclick="filterGallery('all',this)">All</button>
+    <button class="cat-tab" data-cat="urban" onclick="filterGallery('urban',this)">Urban</button>
+    <button class="cat-tab" data-cat="cyber" onclick="filterGallery('cyber',this)">Cyber Cities</button>
+    <button class="cat-tab" data-cat="portrait" onclick="filterGallery('portrait',this)">Portrait</button>
+    <button class="add-cat-btn" onclick="openModal('cat-modal')" title="Add category">＋</button>
+  </div>
+
+  <div class="gallery-grid" id="gallery-grid">
+    <!-- placeholder slots -->
+    <div class="gallery-item" data-cat="urban">
+      <div class="gallery-placeholder" onclick="triggerGalleryUpload(this)">
+        <div class="upload-icon" style="font-size:24px;opacity:0.3">＋</div>
+        <span>Add photo</span>
+      </div>
+      <input type="file" accept="image/*" style="display:none" onchange="handleGalleryUpload(this)">
+    </div>
+    <div class="gallery-item" data-cat="cyber">
+      <div class="gallery-placeholder" onclick="triggerGalleryUpload(this)">
+        <div class="upload-icon" style="font-size:24px;opacity:0.3">＋</div>
+        <span>Add photo</span>
+      </div>
+      <input type="file" accept="image/*" style="display:none" onchange="handleGalleryUpload(this)">
+    </div>
+    <div class="gallery-item" data-cat="portrait">
+      <div class="gallery-placeholder" onclick="triggerGalleryUpload(this)">
+        <div class="upload-icon" style="font-size:24px;opacity:0.3">＋</div>
+        <span>Add photo</span>
+      </div>
+      <input type="file" accept="image/*" style="display:none" onchange="handleGalleryUpload(this)">
+    </div>
+    <div class="gallery-item" data-cat="urban">
+      <div class="gallery-placeholder" onclick="triggerGalleryUpload(this)">
+        <div class="upload-icon" style="font-size:24px;opacity:0.3">＋</div>
+        <span>Add photo</span>
+      </div>
+      <input type="file" accept="image/*" style="display:none" onchange="handleGalleryUpload(this)">
+    </div>
+    <div class="gallery-item" data-cat="cyber">
+      <div class="gallery-placeholder" onclick="triggerGalleryUpload(this)">
+        <div class="upload-icon" style="font-size:24px;opacity:0.3">＋</div>
+        <span>Add photo</span>
+      </div>
+      <input type="file" accept="image/*" style="display:none" onchange="handleGalleryUpload(this)">
+    </div>
+    <div class="gallery-item" data-cat="portrait">
+      <div class="gallery-placeholder" onclick="triggerGalleryUpload(this)">
+        <div class="upload-icon" style="font-size:24px;opacity:0.3">＋</div>
+        <span>Add photo</span>
+      </div>
+      <input type="file" accept="image/*" style="display:none" onchange="handleGalleryUpload(this)">
+    </div>
+  </div>
+
+  <!-- Add slot button in edit mode -->
+  <div style="text-align:center;margin-top:32px;display:none" id="add-slot-wrap">
+    <button class="nav-edit-btn" onclick="addGallerySlot()">＋ Add Photo Slot</button>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-label">Contact</div>
+  <div class="contact-grid fade-up">
+    <div>
+      <h2 class="section-title">Let's connect</h2>
+      <p class="contact-intro" id="contact-intro">Available for commercial projects, editorial work, and collaborations. Based in the San Francisco Bay Area.</p>
+    </div>
+    <div class="contact-links">
+      <a href="mailto:hello@zoeyang.com" class="contact-link">
         <div>
-          <span class="stat-num">200+</span>
-          <span class="stat-label">Projects</span>
+          <div class="contact-link-label">Email</div>
+          <div class="contact-link-val" id="contact-email">hello@zoeyang.com</div>
         </div>
+        <div class="contact-arrow">→</div>
+      </a>
+      <a href="https://instagram.com/zoeyang" target="_blank" class="contact-link">
         <div>
-          <span class="stat-num">12</span>
-          <span class="stat-label">Countries</span>
+          <div class="contact-link-label">Instagram</div>
+          <div class="contact-link-val" id="contact-ig">@zoeyang</div>
         </div>
+        <div class="contact-arrow">→</div>
+      </a>
+      <a href="https://zoeyang.com" target="_blank" class="contact-link">
         <div>
-          <span class="stat-num">7</span>
-          <span class="stat-label">Awards</span>
+          <div class="contact-link-label">Website</div>
+          <div class="contact-link-val">zoeyang.com</div>
         </div>
-      </div>
+        <div class="contact-arrow">→</div>
+      </a>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Blog / Journal -->
-  <section id="blog">
-    <div class="blog-header reveal">
-      <p class="section-label">Thoughts &amp; Process</p>
-      <h2 class="section-title">The Journal</h2>
-    </div>
-    <div class="blog-grid">
-      <article class="blog-card reveal">
-        <div class="blog-img"><div class="blog-img-1"></div></div>
-        <p class="blog-date">February 10, 2026</p>
-        <h3 class="blog-title">On Shooting in Film vs. Digital</h3>
-        <p class="blog-excerpt">There's a particular kind of patience that film requires. You can't chimp the back of a Leica. Here's what switching back taught me about my process.</p>
-        <a href="#" class="blog-link">Read more</a>
-      </article>
-      <article class="blog-card reveal">
-        <div class="blog-img"><div class="blog-img-2"></div></div>
-        <p class="blog-date">January 22, 2026</p>
-        <h3 class="blog-title">The Quiet Hours: Shooting at Dawn</h3>
-        <p class="blog-excerpt">Cities hold their breath between 4am and 6am. The light is soft, the streets are honest, and the only sound is your shutter.</p>
-        <a href="#" class="blog-link">Read more</a>
-      </article>
-      <article class="blog-card reveal">
-        <div class="blog-img"><div class="blog-img-3"></div></div>
-        <p class="blog-date">December 18, 2025</p>
-        <h3 class="blog-title">My Editing Workflow in 2025</h3>
-        <p class="blog-excerpt">After years of trying every tool available, I've landed on a minimal workflow that gets out of the way and lets the image breathe.</p>
-        <a href="#" class="blog-link">Read more</a>
-      </article>
-    </div>
-  </section>
+<!-- FOOTER -->
+<footer>
+  <span>© 2025 Zoe Yang. All rights reserved.</span>
+  <span>San Francisco Bay Area, CA</span>
+</footer>
 
-  <!-- Contact -->
-  <section id="contact">
-    <div class="contact-info reveal">
-      <p class="section-label">Get in Touch</p>
-      <h2 class="section-title">Let's Make<br><em>Something</em></h2>
-      <p>Whether you have a commission in mind, a collaboration idea, or just want to talk photography — my inbox is always open.</p>
-      <div class="contact-detail">
-        <p class="contact-detail-label">Email</p>
-        <p class="contact-detail-value">hello@janedoe.com</p>
-      </div>
-      <div class="contact-detail">
-        <p class="contact-detail-label">Based in</p>
-        <p class="contact-detail-value">New York, NY</p>
-      </div>
-      <div class="contact-detail">
-        <p class="contact-detail-label">Available for</p>
-        <p class="contact-detail-value">Commissions · Editorial · Exhibitions</p>
-      </div>
-    </div>
-    <div class="reveal">
-      <form id="contactForm" onsubmit="handleSubmit(event)">
-        <div class="form-group">
-          <label for="name">Your Name</label>
-          <input type="text" id="name" name="name" required placeholder="Jane Smith">
-        </div>
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" name="email" required placeholder="jane@example.com">
-        </div>
-        <div class="form-group">
-          <label for="subject">Subject</label>
-          <input type="text" id="subject" name="subject" placeholder="Commission Inquiry">
-        </div>
-        <div class="form-group">
-          <label for="message">Message</label>
-          <textarea id="message" name="message" required placeholder="Tell me about your project..."></textarea>
-        </div>
-        <button type="submit" class="submit-btn">Send Message</button>
-        <p class="form-success" id="formSuccess">Thank you — I'll be in touch soon.</p>
-      </form>
-    </div>
-  </section>
+<script>
+  // ── CONFIG ──
+  const EDIT_PASSWORD = 'zoe2025'; // Change this to your password
 
-  <!-- Footer -->
-  <footer>
-    <p>© 2026 Jane Doe Photography. All rights reserved.</p>
-    <div class="footer-links">
-      <a href="#">Instagram</a>
-      <a href="#">Behance</a>
-      <a href="#">LinkedIn</a>
-    </div>
-  </footer>
+  let editMode = false;
+  const editableIds = ['hero-title-italic','hero-title-main','hero-sub','about-p1','about-p2','about-p3','detail-location','detail-edu','detail-spec','contact-intro','contact-email','contact-ig'];
 
-  <script>
-    // Custom cursor
-    const cursor = document.getElementById('cursor');
-    const ring = document.getElementById('cursorRing');
-    let mx = 0, my = 0, rx = 0, ry = 0;
-    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-    function animateCursor() {
-      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
-      rx += (mx - rx) * 0.15; ry += (my - ry) * 0.15;
-      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-      requestAnimationFrame(animateCursor);
+  // ── MODAL ──
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  // ── PASSWORD ──
+  function checkPassword() {
+    const val = document.getElementById('pw-input').value;
+    const input = document.getElementById('pw-input');
+    const err = document.getElementById('pw-error');
+    if (val === EDIT_PASSWORD) {
+      closeModal('pw-modal');
+      enableEditMode();
+      document.getElementById('pw-input').value = '';
+      err.style.display = 'none';
+      input.classList.remove('error');
+    } else {
+      input.classList.add('error');
+      err.style.display = 'block';
     }
-    animateCursor();
+  }
 
-    // Scroll reveal
-    const reveals = document.querySelectorAll('.reveal');
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
-    }, { threshold: 0.1 });
-    reveals.forEach(el => obs.observe(el));
+  // ── EDIT MODE ──
+  function enableEditMode() {
+    editMode = true;
+    document.body.classList.add('edit-mode');
+    document.getElementById('edit-bar').classList.add('active');
+    document.getElementById('edit-toggle-btn').textContent = 'Editing';
+    document.getElementById('add-slot-wrap').style.display = 'block';
 
-    // Lightbox
-    const labels = ['Portraits','Landscape','Street','Documentary','Architecture','Abstract','Travel','Nature','Editorial','Fashion','Events','Fine Art'];
-    function openLightbox(index) {
-      const lb = document.getElementById('lightbox');
-      const content = document.getElementById('lightboxContent');
-      content.textContent = labels[index] + ' — Photo ' + (index+1);
-      lb.classList.add('open');
-    }
-    function closeLightbox() {
-      document.getElementById('lightbox').classList.remove('open');
-    }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+    // Make placeholders clickable always in edit mode (even if already have image)
+    document.getElementById('hero-placeholder').style.display = 'flex';
+    document.getElementById('about-placeholder').style.display = 'flex';
 
-    // Contact form
-    function handleSubmit(e) {
-      e.preventDefault();
-      document.getElementById('contactForm').style.opacity = '0.4';
-      setTimeout(() => {
-        document.getElementById('contactForm').style.display = 'none';
-        document.getElementById('formSuccess').style.display = 'block';
-      }, 600);
+    // Make text editable
+    editableIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.contentEditable = 'true';
+    });
+
+    // Show gallery placeholders — handled by CSS edit-mode class
+  }
+
+  function disableEditMode() {
+    editMode = false;
+    document.body.classList.remove('edit-mode');
+    document.getElementById('edit-bar').classList.remove('active');
+    document.getElementById('edit-toggle-btn').textContent = 'Edit';
+    document.getElementById('add-slot-wrap').style.display = 'none';
+
+    editableIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.contentEditable = 'false';
+    });
+
+    // Hide placeholders if photos exist
+    if (document.getElementById('hero-img').src && document.getElementById('hero-img').style.display !== 'none') {
+      document.getElementById('hero-placeholder').style.display = 'none';
     }
-  </script>
+    if (document.getElementById('about-img').src && document.getElementById('about-img').style.display !== 'none') {
+      document.getElementById('about-placeholder').style.display = 'none';
+    }
+
+    // Gallery placeholders hidden by CSS when not in edit-mode
+  }
+
+  function publishSite() {
+    disableEditMode();
+    // Show a brief confirmation
+    const bar = document.getElementById('edit-bar');
+    bar.classList.remove('active');
+    showToast('Changes published!');
+  }
+
+  function discardChanges() {
+    if (confirm('Discard all changes and exit edit mode?')) {
+      location.reload();
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    Object.assign(t.style, {
+      position:'fixed', bottom:'32px', left:'50%', transform:'translateX(-50%)',
+      background:'#1a1a18', color:'#f7f4ef', padding:'12px 28px',
+      fontSize:'11px', letterSpacing:'0.12em', zIndex:'9999',
+      opacity:'0', transition:'opacity 0.3s', fontFamily:'Montserrat,sans-serif'
+    });
+    document.body.appendChild(t);
+    setTimeout(() => t.style.opacity = '1', 10);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+  }
+
+  // ── UPLOADS ──
+  function triggerUpload(inputId) {
+    if (!editMode) return;
+    document.getElementById(inputId).click();
+  }
+
+  function handleUpload(input, imgId, placeholderId) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById(imgId);
+      img.src = e.target.result;
+      img.style.display = 'block';
+      if (placeholderId) document.getElementById(placeholderId).style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function triggerGalleryUpload(placeholder) {
+    if (!editMode) return;
+    const input = placeholder.parentElement.querySelector('input[type=file]');
+    if (input) input.click();
+  }
+
+  function handleGalleryUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const item = input.parentElement;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const placeholder = item.querySelector('.gallery-placeholder');
+      if (placeholder) placeholder.style.display = 'none';
+
+      let img = item.querySelector('img');
+      if (!img) {
+        img = document.createElement('img');
+        item.insertBefore(img, input);
+      }
+      img.src = e.target.result;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+
+      let overlay = item.querySelector('.gallery-item-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'gallery-item-overlay';
+        item.appendChild(overlay);
+      }
+
+      img.onclick = () => openLightbox(e.target.result);
+
+      // Delete button
+      let delBtn = item.querySelector('.gallery-add-btn');
+      if (!delBtn) {
+        delBtn = document.createElement('button');
+        delBtn.className = 'gallery-add-btn';
+        delBtn.textContent = '✕';
+        delBtn.title = 'Remove photo';
+        delBtn.onclick = (ev) => { ev.stopPropagation(); removeGalleryPhoto(item); };
+        item.appendChild(delBtn);
+      }
+      delBtn.style.display = 'flex';
+      delBtn.textContent = '✕';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeGalleryPhoto(item) {
+    const img = item.querySelector('img');
+    if (img) img.remove();
+    const ph = item.querySelector('.gallery-placeholder');
+    if (ph) ph.style.display = 'flex';
+    const btn = item.querySelector('.gallery-add-btn');
+    if (btn) btn.style.display = 'none';
+  }
+
+  function addGallerySlot() {
+    const grid = document.getElementById('gallery-grid');
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+    item.dataset.cat = currentCat || 'all';
+    item.innerHTML = `
+      <div class="gallery-placeholder" onclick="triggerGalleryUpload(this)">
+        <div style="font-size:24px;opacity:0.3">＋</div>
+        <span style="font-size:9px;letter-spacing:0.15em;color:var(--light);text-transform:uppercase">Add photo</span>
+      </div>
+      <input type="file" accept="image/*" style="display:none" onchange="handleGalleryUpload(this)">
+    `;
+    grid.appendChild(item);
+  }
+
+  // ── GALLERY FILTER ──
+  let currentCat = 'all';
+  function filterGallery(cat, btn) {
+    currentCat = cat;
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      if (cat === 'all' || item.dataset.cat === cat) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  // ── ADD CATEGORY ──
+  function addCategory() {
+    const name = document.getElementById('cat-input').value.trim();
+    if (!name) return;
+    const slug = name.toLowerCase().replace(/\s+/g,'-');
+    const tabs = document.getElementById('cat-tabs');
+    const addBtn = tabs.querySelector('.add-cat-btn');
+    const tab = document.createElement('button');
+    tab.className = 'cat-tab';
+    tab.dataset.cat = slug;
+    tab.textContent = name;
+    tab.onclick = function() { filterGallery(slug, this); };
+    tabs.insertBefore(tab, addBtn);
+    closeModal('cat-modal');
+    document.getElementById('cat-input').value = '';
+  }
+
+  // ── LIGHTBOX ──
+  function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('open');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+  }
+
+  // ── SCROLL ANIMATIONS ──
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // ── CLOSE MODALS ON OVERLAY CLICK ──
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+
+  // ── KEYBOARD ──
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+      closeLightbox();
+    }
+  });
+</script>
 </body>
 </html>
