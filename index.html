@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jane Doe — Photography</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f7f4;
+      --ink: #1a1a18;
+      --muted: #8a8a82;
+      --accent: #c8b89a;
+      --white: #ffffff;
+      --serif: 'Cormorant Garamond', serif;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.6;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed;
+      width: 8px; height: 8px;
+      background: var(--ink);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 32px; height: 32px;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: all 0.15s ease;
+      opacity: 0.5;
+    }
+    a:hover ~ .cursor, button:hover ~ .cursor { transform: translate(-50%,-50%) scale(2); }
+
+    /* Nav */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 2rem 4rem;
+      mix-blend-mode: multiply;
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      font-weight: 300;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      color: var(--ink);
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--ink);
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      position: relative;
+      padding-bottom: 2px;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0;
+      width: 0; height: 1px;
+      background: var(--ink);
+      transition: width 0.3s ease;
+    }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* Hero */
+    #home {
+      height: 100vh;
+      display: flex; align-items: flex-end;
+      padding: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #e8e4dc 0%, #d4cfc6 40%, #c2bdb3 100%);
+      z-index: 0;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4;
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero-eyebrow {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.2s forwards;
+    }
+    .hero-title {
+      font-family: var(--serif);
+      font-size: clamp(4rem, 10vw, 9rem);
+      font-weight: 300;
+      line-height: 0.95;
+      letter-spacing: -0.01em;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.4s forwards;
+    }
+    .hero-title em { font-style: italic; color: var(--muted); }
+    .hero-sub {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 320px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.6s forwards;
+    }
+    .hero-scroll {
+      position: absolute; right: 4rem; bottom: 4rem;
+      writing-mode: vertical-rl;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.8s forwards;
+    }
+    .hero-scroll::before {
+      content: '';
+      display: block;
+      width: 1px; height: 60px;
+      background: var(--muted);
+    }
+
+    /* Sections */
+    section { padding: 7rem 4rem; }
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      font-weight: 300;
+      line-height: 1.1;
+    }
+
+    /* Gallery */
+    #gallery { background: var(--white); }
+    .gallery-header { margin-bottom: 4rem; }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-auto-rows: 80px;
+      gap: 12px;
+    }
+    .photo-card {
+      background: var(--bg);
+      overflow: hidden;
+      position: relative;
+      cursor: none;
+    }
+    .photo-card:nth-child(1)  { grid-column: 1/6;  grid-row: 1/6;  }
+    .photo-card:nth-child(2)  { grid-column: 6/9;  grid-row: 1/4;  }
+    .photo-card:nth-child(3)  { grid-column: 9/13; grid-row: 1/5;  }
+    .photo-card:nth-child(4)  { grid-column: 6/9;  grid-row: 4/7;  }
+    .photo-card:nth-child(5)  { grid-column: 9/13; grid-row: 5/9;  }
+    .photo-card:nth-child(6)  { grid-column: 1/5;  grid-row: 6/9;  }
+    .photo-card:nth-child(7)  { grid-column: 5/9;  grid-row: 7/11; }
+    .photo-card:nth-child(8)  { grid-column: 9/13; grid-row: 9/13; }
+    .photo-card:nth-child(9)  { grid-column: 1/5;  grid-row: 9/13; }
+    .photo-card:nth-child(10) { grid-column: 5/9;  grid-row: 11/14;}
+    .photo-card:nth-child(11) { grid-column: 9/13; grid-row: 13/16;}
+    .photo-card:nth-child(12) { grid-column: 1/5;  grid-row: 13/16;}
+
+    /* Placeholder gradient images */
+    .photo-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .photo-card:nth-child(1)::before  { background: linear-gradient(135deg, #c9b99a, #a09070); }
+    .photo-card:nth-child(2)::before  { background: linear-gradient(135deg, #b8c4bb, #8a9e93); }
+    .photo-card:nth-child(3)::before  { background: linear-gradient(135deg, #d4c5b0, #b09070); }
+    .photo-card:nth-child(4)::before  { background: linear-gradient(135deg, #c2d0c8, #96a89e); }
+    .photo-card:nth-child(5)::before  { background: linear-gradient(135deg, #bfb5a8, #8e826e); }
+    .photo-card:nth-child(6)::before  { background: linear-gradient(135deg, #ccc0af, #a89060); }
+    .photo-card:nth-child(7)::before  { background: linear-gradient(135deg, #b5c2bc, #8a9f92); }
+    .photo-card:nth-child(8)::before  { background: linear-gradient(135deg, #c8baaa, #9e8878); }
+    .photo-card:nth-child(9)::before  { background: linear-gradient(135deg, #d0c0a8, #a08060); }
+    .photo-card:nth-child(10)::before { background: linear-gradient(135deg, #b8c8c0, #889890); }
+    .photo-card:nth-child(11)::before { background: linear-gradient(135deg, #c0b4a4, #907060); }
+    .photo-card:nth-child(12)::before { background: linear-gradient(135deg, #cac4b8, #a0987c); }
+
+    .photo-card:hover::before { transform: scale(1.05); }
+
+    .photo-label {
+      position: absolute; bottom: 1rem; left: 1rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .photo-card:hover .photo-label { opacity: 1; }
+
+    /* Add your real images by replacing the ::before with an img tag */
+    .photo-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .photo-card:hover img { transform: scale(1.05); }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed; inset: 0;
+      background: rgba(20,20,18,0.95);
+      z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .lightbox.open { opacity: 1; pointer-events: all; }
+    .lightbox img {
+      max-width: 85vw; max-height: 85vh;
+      object-fit: contain;
+      border: none;
+    }
+    .lightbox-close {
+      position: absolute; top: 2rem; right: 2rem;
+      background: none; border: none;
+      color: white; font-size: 1.5rem;
+      cursor: pointer; padding: 0.5rem;
+    }
+    .lightbox-placeholder {
+      width: 600px; height: 400px;
+      background: linear-gradient(135deg, #3a3530, #2a2520);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.3);
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* About */
+    #about {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+    .about-image {
+      aspect-ratio: 3/4;
+      background: linear-gradient(160deg, #c4b8a4, #8e7e68);
+      position: relative;
+      overflow: hidden;
+    }
+    .about-image::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 60%, rgba(20,18,14,0.3));
+    }
+    .about-text .section-title { margin-bottom: 2rem; }
+    .about-text p {
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+    .about-stats {
+      display: flex; gap: 3rem;
+      margin-top: 3rem; padding-top: 2rem;
+      border-top: 1px solid #e0ddd8;
+    }
+    .stat-num {
+      font-family: var(--serif);
+      font-size: 2.5rem;
+      font-weight: 300;
+      display: block;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* Blog */
+    #blog { background: var(--white); }
+    .blog-header { margin-bottom: 4rem; }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+    .blog-card {
+      border-top: 1px solid #e0ddd8;
+      padding-top: 1.5rem;
+      cursor: none;
+    }
+    .blog-date {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .blog-title {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      font-weight: 300;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+    .blog-excerpt {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+    .blog-link {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--ink);
+      position: relative;
+      padding-bottom: 2px;
+    }
+    .blog-link::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0;
+      width: 100%; height: 1px;
+      background: var(--ink);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.3s ease;
+    }
+    .blog-link:hover::after { transform: scaleX(1); transform-origin: left; }
+    .blog-img {
+      width: 100%; aspect-ratio: 16/9;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .blog-img div {
+      width: 100%; height: 100%;
+      transition: transform 0.6s ease;
+    }
+    .blog-card:hover .blog-img div { transform: scale(1.05); }
+    .blog-img-1 { background: linear-gradient(135deg, #c8b89a, #a08060); }
+    .blog-img-2 { background: linear-gradient(135deg, #b0c0b8, #809088); }
+    .blog-img-3 { background: linear-gradient(135deg, #c0b4a0, #907860); }
+
+    /* Contact */
+    #contact {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: start;
+    }
+    .contact-info .section-title { margin-bottom: 1.5rem; }
+    .contact-info p { color: var(--muted); font-size: 0.95rem; line-height: 1.8; margin-bottom: 2rem; }
+    .contact-detail {
+      margin-bottom: 1.5rem;
+    }
+    .contact-detail-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+    .contact-detail-value { font-size: 0.95rem; }
+
+    form { display: flex; flex-direction: column; gap: 1.5rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    label {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    input, textarea {
+      background: none;
+      border: none;
+      border-bottom: 1px solid #d8d4cc;
+      padding: 0.75rem 0;
+      font-family: var(--sans);
+      font-weight: 300;
+      font-size: 0.95rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.3s;
+      resize: none;
+      cursor: none;
+    }
+    input:focus, textarea:focus { border-color: var(--ink); }
+    textarea { min-height: 120px; }
+    .submit-btn {
+      align-self: flex-start;
+      background: var(--ink);
+      color: var(--white);
+      border: none;
+      padding: 1rem 2.5rem;
+      font-family: var(--sans);
+      font-weight: 300;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: none;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    .submit-btn:hover { background: var(--muted); }
+    .form-success {
+      display: none;
+      color: var(--accent);
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      font-style: italic;
+    }
+
+    /* Footer */
+    footer {
+      padding: 2rem 4rem;
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid #e0ddd8;
+    }
+    footer p { font-size: 0.75rem; color: var(--muted); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .footer-links a:hover { color: var(--ink); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 900px) {
+      nav { padding: 1.5rem 2rem; }
+      section { padding: 5rem 2rem; }
+      #about, #contact { grid-template-columns: 1fr; gap: 3rem; }
+      .blog-grid { grid-template-columns: 1fr; }
+      .gallery-grid { grid-template-columns: repeat(2,1fr); grid-auto-rows: 180px; }
+      .photo-card { grid-column: auto !important; grid-row: auto !important; }
+      footer { flex-direction: column; gap: 1rem; padding: 2rem; }
+      .hero-scroll { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Nav -->
+  <nav>
+    <a href="#home" class="nav-logo">Jane Doe</a>
+    <ul class="nav-links">
+      <li><a href="#gallery">Work</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#blog">Journal</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section id="home">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Portfolio — Est. 2018</p>
+      <h1 class="hero-title">Light &amp;<br><em>Shadow</em></h1>
+      <p class="hero-sub">Documentary and portrait photography. Stories told through stillness.</p>
+    </div>
+    <div class="hero-scroll">Scroll</div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="gallery">
+    <div class="gallery-header reveal">
+      <p class="section-label">Selected Work</p>
+      <h2 class="section-title">The Portfolio</h2>
+    </div>
+    <div class="gallery-grid reveal">
+      <!-- 
+        TO ADD YOUR PHOTOS: Replace the placeholder cards with real images.
+        Example: <div class="photo-card" onclick="openLightbox(this)">
+                   <img src="your-photo.jpg" alt="Description">
+                   <span class="photo-label">Series Name</span>
+                 </div>
+      -->
+      <div class="photo-card" onclick="openLightbox(0)"><span class="photo-label">Portraits</span></div>
+      <div class="photo-card" onclick="openLightbox(1)"><span class="photo-label">Landscape</span></div>
+      <div class="photo-card" onclick="openLightbox(2)"><span class="photo-label">Street</span></div>
+      <div class="photo-card" onclick="openLightbox(3)"><span class="photo-label">Documentary</span></div>
+      <div class="photo-card" onclick="openLightbox(4)"><span class="photo-label">Architecture</span></div>
+      <div class="photo-card" onclick="openLightbox(5)"><span class="photo-label">Abstract</span></div>
+      <div class="photo-card" onclick="openLightbox(6)"><span class="photo-label">Travel</span></div>
+      <div class="photo-card" onclick="openLightbox(7)"><span class="photo-label">Nature</span></div>
+      <div class="photo-card" onclick="openLightbox(8)"><span class="photo-label">Editorial</span></div>
+      <div class="photo-card" onclick="openLightbox(9)"><span class="photo-label">Fashion</span></div>
+      <div class="photo-card" onclick="openLightbox(10)"><span class="photo-label">Events</span></div>
+      <div class="photo-card" onclick="openLightbox(11)"><span class="photo-label">Fine Art</span></div>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <div class="lightbox-placeholder" id="lightboxContent">Your photo here</div>
+  </div>
+
+  <!-- About -->
+  <section id="about">
+    <div class="about-image reveal">
+      <!-- Replace with: <img src="your-portrait.jpg" alt="Jane Doe" style="width:100%;height:100%;object-fit:cover;"> -->
+    </div>
+    <div class="about-text reveal">
+      <p class="section-label">About Me</p>
+      <h2 class="section-title">A Photographer<br>by <em>Instinct</em></h2>
+      <p>I'm Jane Doe, a documentary and portrait photographer based in New York. I've spent the last decade chasing light — from quiet morning streets to bustling markets across three continents.</p>
+      <p>My work explores the space between the expected and the unseen: the gesture right before a laugh, the stillness after a storm. I believe every photograph is a negotiation between the world and the moment you choose to freeze it.</p>
+      <p>Available for commissions, editorial work, and exhibitions worldwide.</p>
+      <div class="about-stats">
+        <div>
+          <span class="stat-num">200+</span>
+          <span class="stat-label">Projects</span>
+        </div>
+        <div>
+          <span class="stat-num">12</span>
+          <span class="stat-label">Countries</span>
+        </div>
+        <div>
+          <span class="stat-num">7</span>
+          <span class="stat-label">Awards</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog / Journal -->
+  <section id="blog">
+    <div class="blog-header reveal">
+      <p class="section-label">Thoughts &amp; Process</p>
+      <h2 class="section-title">The Journal</h2>
+    </div>
+    <div class="blog-grid">
+      <article class="blog-card reveal">
+        <div class="blog-img"><div class="blog-img-1"></div></div>
+        <p class="blog-date">February 10, 2026</p>
+        <h3 class="blog-title">On Shooting in Film vs. Digital</h3>
+        <p class="blog-excerpt">There's a particular kind of patience that film requires. You can't chimp the back of a Leica. Here's what switching back taught me about my process.</p>
+        <a href="#" class="blog-link">Read more</a>
+      </article>
+      <article class="blog-card reveal">
+        <div class="blog-img"><div class="blog-img-2"></div></div>
+        <p class="blog-date">January 22, 2026</p>
+        <h3 class="blog-title">The Quiet Hours: Shooting at Dawn</h3>
+        <p class="blog-excerpt">Cities hold their breath between 4am and 6am. The light is soft, the streets are honest, and the only sound is your shutter.</p>
+        <a href="#" class="blog-link">Read more</a>
+      </article>
+      <article class="blog-card reveal">
+        <div class="blog-img"><div class="blog-img-3"></div></div>
+        <p class="blog-date">December 18, 2025</p>
+        <h3 class="blog-title">My Editing Workflow in 2025</h3>
+        <p class="blog-excerpt">After years of trying every tool available, I've landed on a minimal workflow that gets out of the way and lets the image breathe.</p>
+        <a href="#" class="blog-link">Read more</a>
+      </article>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact">
+    <div class="contact-info reveal">
+      <p class="section-label">Get in Touch</p>
+      <h2 class="section-title">Let's Make<br><em>Something</em></h2>
+      <p>Whether you have a commission in mind, a collaboration idea, or just want to talk photography — my inbox is always open.</p>
+      <div class="contact-detail">
+        <p class="contact-detail-label">Email</p>
+        <p class="contact-detail-value">hello@janedoe.com</p>
+      </div>
+      <div class="contact-detail">
+        <p class="contact-detail-label">Based in</p>
+        <p class="contact-detail-value">New York, NY</p>
+      </div>
+      <div class="contact-detail">
+        <p class="contact-detail-label">Available for</p>
+        <p class="contact-detail-value">Commissions · Editorial · Exhibitions</p>
+      </div>
+    </div>
+    <div class="reveal">
+      <form id="contactForm" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label for="name">Your Name</label>
+          <input type="text" id="name" name="name" required placeholder="Jane Smith">
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" required placeholder="jane@example.com">
+        </div>
+        <div class="form-group">
+          <label for="subject">Subject</label>
+          <input type="text" id="subject" name="subject" placeholder="Commission Inquiry">
+        </div>
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" required placeholder="Tell me about your project..."></textarea>
+        </div>
+        <button type="submit" class="submit-btn">Send Message</button>
+        <p class="form-success" id="formSuccess">Thank you — I'll be in touch soon.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2026 Jane Doe Photography. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="#">Instagram</a>
+      <a href="#">Behance</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    function animateCursor() {
+      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+      rx += (mx - rx) * 0.15; ry += (my - ry) * 0.15;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => obs.observe(el));
+
+    // Lightbox
+    const labels = ['Portraits','Landscape','Street','Documentary','Architecture','Abstract','Travel','Nature','Editorial','Fashion','Events','Fine Art'];
+    function openLightbox(index) {
+      const lb = document.getElementById('lightbox');
+      const content = document.getElementById('lightboxContent');
+      content.textContent = labels[index] + ' — Photo ' + (index+1);
+      lb.classList.add('open');
+    }
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+    // Contact form
+    function handleSubmit(e) {
+      e.preventDefault();
+      document.getElementById('contactForm').style.opacity = '0.4';
+      setTimeout(() => {
+        document.getElementById('contactForm').style.display = 'none';
+        document.getElementById('formSuccess').style.display = 'block';
+      }, 600);
+    }
+  </script>
+</body>
+</html>
